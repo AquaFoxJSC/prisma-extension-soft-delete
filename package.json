@@ -37,7 +37,7 @@
   "author": "AquaFoxJSC",
   "license": "MIT",
   "dependencies": {
-    "prisma-extension-nested-operations": "^1.0.1"
+    "@aquafoxjsc/prisma-extension-nested-operations": "^1.0.0-rc1"
   },
   "peerDependencies": {
     "@prisma/client": "*"

@@ -1,4 +1,4 @@
-import { NestedParams } from "prisma-extension-nested-operations";
+import { NestedParams } from "@aquafoxjsc/prisma-extension-nested-operations";
 import { ModelConfig } from "../types";
 export declare function initializePrismaData(Prisma: any): void;
 export type Params = Omit<NestedParams<any>, "operation"> & {

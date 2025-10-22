@@ -26,7 +26,7 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createSoftDeleteExtension = void 0;
 const extension_1 = require("@prisma/client/extension");
-const prisma_extension_nested_operations_1 = require("prisma-extension-nested-operations");
+const prisma_extension_nested_operations_1 = require("@aquafoxjsc/prisma-extension-nested-operations");
 const createParams_1 = require("./helpers/createParams");
 const modifyResult_1 = require("./helpers/modifyResult");
 async function createSoftDeleteExtension({ models, defaultConfig = {
@@ -45,6 +45,8 @@ async function createSoftDeleteExtension({ models, defaultConfig = {
     // Dynamic import Prisma client from custom path or default
     const prismaClientPath = clientPath || "@prisma/client";
     console.log('[prisma-extension-soft-delete] prismaClientPath:', prismaClientPath);
+    // Initialize Prisma client for nested-operations extension first
+    await (0, prisma_extension_nested_operations_1.initializePrismaClient)(clientPath);
     let Prisma;
     try {
         const imported = await (_a = prismaClientPath, Promise.resolve().then(() => __importStar(require(_a))));

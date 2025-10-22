@@ -3,7 +3,8 @@ import type { PrismaClient } from "@prisma/client";
 import {
   NestedOperation,
   withNestedOperations,
-} from "prisma-extension-nested-operations";
+  initializePrismaClient as initializeNestedOperationsPrismaClient,
+} from "@aquafoxjsc/prisma-extension-nested-operations";
 import {
   createAggregateParams,
   createCountParams,
@@ -58,6 +59,9 @@ export async function createSoftDeleteExtension({
   // Dynamic import Prisma client from custom path or default
   const prismaClientPath = clientPath || "@prisma/client";
   console.log('[prisma-extension-soft-delete] prismaClientPath:', prismaClientPath);
+  
+  // Initialize Prisma client for nested-operations extension first
+  await initializeNestedOperationsPrismaClient(clientPath);
   
   let Prisma: typeof PrismaClient;
   try {
