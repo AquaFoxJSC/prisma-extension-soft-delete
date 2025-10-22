@@ -51,11 +51,14 @@ async function createSoftDeleteExtension({ models, defaultConfig = {
     try {
         const imported = await (_a = prismaClientPath, Promise.resolve().then(() => __importStar(require(_a))));
         Prisma = imported.Prisma;
+        if (!Prisma || !Prisma.dmmf) {
+            throw new Error('Imported Prisma object does not have dmmf property. Please ensure Prisma client is properly generated.');
+        }
     }
     catch (error) {
         if (clientPath) {
             // If clientPath is provided but import fails, throw error
-            throw new Error(`Cannot find Prisma client at path: ${clientPath}. Please check if the path is correct and the Prisma client is generated.`);
+            throw new Error(`Cannot find Prisma client at path: ${clientPath}. Error: ${error instanceof Error ? error.message : String(error)}`);
         }
         else {
             // If no clientPath provided, re-throw the original error
