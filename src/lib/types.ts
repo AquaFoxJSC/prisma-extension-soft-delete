@@ -10,4 +10,5 @@ export type ModelConfig = {
 export type Config = {
   models: Partial<Record<Prisma.ModelName, ModelConfig | boolean>>;
   defaultConfig?: ModelConfig;
+  clientPath?: string;
 };

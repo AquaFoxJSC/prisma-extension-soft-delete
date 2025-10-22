@@ -78,13 +78,44 @@ function and pass it to `client.$extends`.
 The `createSoftDeleteExtension` function takes a config object where you can define the models you want to use soft
 delete with.
 
+#### Custom Prisma Client Path
+
+If your Prisma client is generated to a custom location (not the default `node_modules/@prisma/client`), you can specify the path using the `clientPath` option:
+
+```typescript
+import { createSoftDeleteExtension } from 'prisma-extension-soft-delete';
+
+const extension = await createSoftDeleteExtension({
+  models: {
+    Comment: true,
+  },
+  clientPath: "../src/generated/prisma" // Path to your custom Prisma client
+});
+
+const client = new PrismaClient().$extends(extension);
+```
+
+This is useful when you have configured your Prisma schema with a custom output location:
+
+```prisma
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  engineType             = "client"
+  runtime                = "nodejs"
+  moduleFormat           = "cjs"
+  generatedFileExtension = "ts"
+  importFileExtension    = ""
+}
+```
+
 ```typescript
 import { PrismaClient } from "@prisma/client";
 
 const client = new PrismaClient();
 
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       Comment: true,
     },
@@ -98,7 +129,7 @@ by default and a `DateTime` when the record is deleted you would pass the follow
 
 ```typescript
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       Comment: {
         field: "deletedAt",
@@ -121,7 +152,7 @@ object:
 
 ```typescript
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       Comment: true,
       Post: true,
@@ -134,7 +165,7 @@ To modify the default field and type for all models you can pass a `defaultConfi
 
 ```typescript
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       Comment: true,
       Post: true,
@@ -155,7 +186,7 @@ for that model:
 
 ```typescript
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       Comment: true,
       Post: {
@@ -180,7 +211,7 @@ through a nested update. If you want to allow this you can set `allowToOneUpdate
 
 ```typescript
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       Comment: {
         field: "deleted",
@@ -202,7 +233,7 @@ will throw an error if you try to use a where with compound unique index fields.
 
 ```typescript
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       Comment: {
         field: "deleted",
@@ -222,7 +253,7 @@ To allow to one updates or compound unique index fields globally you can use the
 
 ```typescript
 const extendedClient = client.$extends(
-  createSoftDeleteExtension({
+  await createSoftDeleteExtension({
     models: {
       User: true,
       Comment: true,
