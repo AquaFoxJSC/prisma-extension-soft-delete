@@ -8,6 +8,7 @@ export async function createSoftDeleteExtension({ models, defaultConfig = {
     allowToOneUpdates: false,
     allowCompoundUniqueIndexWhere: false,
 }, clientPath, }) {
+    console.log('[prisma-extension-soft-delete] clientPath:', clientPath);
     if (!defaultConfig.field) {
         throw new Error("prisma-extension-soft-delete: defaultConfig.field is required");
     }
@@ -16,6 +17,7 @@ export async function createSoftDeleteExtension({ models, defaultConfig = {
     }
     // Dynamic import Prisma client from custom path or default
     const prismaClientPath = clientPath || "@prisma/client";
+    console.log('[prisma-extension-soft-delete] prismaClientPath:', prismaClientPath);
     const { Prisma } = await import(prismaClientPath);
     // Initialize Prisma data
     initializePrismaData(Prisma);
