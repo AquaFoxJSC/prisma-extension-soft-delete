@@ -1,6 +1,6 @@
 {
   "name": "@aquafoxjsc/prisma-extension-soft-delete",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0-rc2",
   "publishConfig": {
     "access": "restricted",
     "registry": "https://npm.pkg.github.com"
