@@ -18,7 +18,21 @@ export async function createSoftDeleteExtension({ models, defaultConfig = {
     // Dynamic import Prisma client from custom path or default
     const prismaClientPath = clientPath || "@prisma/client";
     console.log('[prisma-extension-soft-delete] prismaClientPath:', prismaClientPath);
-    const { Prisma } = await import(prismaClientPath);
+    let Prisma;
+    try {
+        const imported = await import(prismaClientPath);
+        Prisma = imported.Prisma;
+    }
+    catch (error) {
+        if (clientPath) {
+            // If clientPath is provided but import fails, throw error
+            throw new Error(`Cannot find Prisma client at path: ${clientPath}. Please check if the path is correct and the Prisma client is generated.`);
+        }
+        else {
+            // If no clientPath provided, re-throw the original error
+            throw error;
+        }
+    }
     // Initialize Prisma data
     initializePrismaData(Prisma);
     const modelConfig = {};
