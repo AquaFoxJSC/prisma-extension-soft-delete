@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
 import { Prisma as PrismaExtensions } from "@prisma/client/extension";
+import type { PrismaClient } from "@prisma/client";
 import {
   NestedOperation,
   withNestedOperations,
@@ -22,6 +22,7 @@ import {
   createWhereParams,
   createGroupByParams,
   CreateParams,
+  initializePrismaData,
 } from "./helpers/createParams";
 
 import { Config, ModelConfig } from "./types";
@@ -31,7 +32,7 @@ type ConfigBound<F> = F extends (x: ModelConfig, ...args: infer P) => infer R
   ? (...args: P) => R
   : never;
 
-export function createSoftDeleteExtension({
+export async function createSoftDeleteExtension({
   models,
   defaultConfig = {
     field: "deleted",
@@ -39,6 +40,7 @@ export function createSoftDeleteExtension({
     allowToOneUpdates: false,
     allowCompoundUniqueIndexWhere: false,
   },
+  clientPath,
 }: Config) {
   if (!defaultConfig.field) {
     throw new Error(
@@ -51,11 +53,18 @@ export function createSoftDeleteExtension({
     );
   }
 
-  const modelConfig: Partial<Record<Prisma.ModelName, ModelConfig>> = {};
+  // Dynamic import Prisma client from custom path or default
+  const prismaClientPath = clientPath || "@prisma/client";
+  const { Prisma } = await import(prismaClientPath) as { Prisma: typeof PrismaClient };
+
+  // Initialize Prisma data
+  initializePrismaData(Prisma);
+
+  const modelConfig: Partial<Record<string, ModelConfig>> = {};
 
   Object.keys(models).forEach((model) => {
-    const modelName = model as Prisma.ModelName;
-    const config = models[modelName];
+    const modelName = model as string;
+    const config = (models as any)[modelName];
     if (config) {
       modelConfig[modelName] =
         typeof config === "boolean" && config ? defaultConfig : config;
@@ -65,7 +74,7 @@ export function createSoftDeleteExtension({
   const createParamsByModel = Object.keys(modelConfig).reduce<
     Record<string, Record<string, ConfigBound<CreateParams> | undefined>>
   >((acc, model) => {
-    const config = modelConfig[model as Prisma.ModelName]!;
+    const config = modelConfig[model]!;
     return {
       ...acc,
       [model]: {
@@ -92,7 +101,7 @@ export function createSoftDeleteExtension({
   const modifyResultByModel = Object.keys(modelConfig).reduce<
     Record<string, Record<string, ConfigBound<ModifyResult> | undefined>>
   >((acc, model) => {
-    const config = modelConfig[model as Prisma.ModelName]!;
+    const config = modelConfig[model]!;
     return {
       ...acc,
       [model]: {
