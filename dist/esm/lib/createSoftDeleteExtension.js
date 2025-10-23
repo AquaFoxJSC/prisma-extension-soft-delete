@@ -1,5 +1,5 @@
 import { Prisma as PrismaExtensions } from "@prisma/client/extension";
-import { withNestedOperations, initializePrismaClient as initializeNestedOperationsPrismaClient, } from "@aquafoxjsc/prisma-extension-nested-operations";
+import { withNestedOperations, initializePrismaClient as initializeNestedOperationsPrismaClient, initializePrismaClientWithNamespace as initializeNestedOperationsWithNamespace, } from "@aquafoxjsc/prisma-extension-nested-operations";
 import { createAggregateParams, createCountParams, createDeleteManyParams, createDeleteParams, createFindFirstParams, createFindFirstOrThrowParams, createFindManyParams, createFindUniqueParams, createFindUniqueOrThrowParams, createIncludeParams, createSelectParams, createUpdateManyParams, createUpdateParams, createUpsertParams, createWhereParams, createGroupByParams, initializePrismaData, } from "./helpers/createParams";
 import { modifyReadResult } from "./helpers/modifyResult";
 export async function createSoftDeleteExtension({ models, defaultConfig = {
@@ -7,34 +7,53 @@ export async function createSoftDeleteExtension({ models, defaultConfig = {
     createValue: Boolean,
     allowToOneUpdates: false,
     allowCompoundUniqueIndexWhere: false,
-}, clientPath, }) {
-    console.log('[prisma-extension-soft-delete] clientPath:', clientPath);
+}, clientPath, prismaNamespace, }) {
     if (!defaultConfig.field) {
         throw new Error("prisma-extension-soft-delete: defaultConfig.field is required");
     }
     if (!defaultConfig.createValue) {
         throw new Error("prisma-extension-soft-delete: defaultConfig.createValue is required");
     }
-    // Dynamic import Prisma client from custom path or default
-    const prismaClientPath = clientPath || "@prisma/client";
-    console.log('[prisma-extension-soft-delete] prismaClientPath:', prismaClientPath);
-    // Initialize Prisma client for nested-operations extension first
-    await initializeNestedOperationsPrismaClient(clientPath);
     let Prisma;
-    try {
-        const imported = await import(prismaClientPath);
-        Prisma = imported.Prisma;
+    // Priority 1: Use provided Prisma namespace directly
+    if (prismaNamespace) {
+        console.log('[prisma-extension-soft-delete] Using provided Prisma namespace');
+        Prisma = prismaNamespace;
         if (!Prisma || !Prisma.dmmf) {
-            throw new Error('Imported Prisma object does not have dmmf property. Please ensure Prisma client is properly generated.');
+            throw new Error('Provided Prisma namespace does not have dmmf property. Please ensure it is a valid Prisma namespace.');
         }
+        // Initialize nested-operations with the same namespace
+        initializeNestedOperationsWithNamespace(prismaNamespace);
     }
-    catch (error) {
-        if (clientPath) {
-            // If clientPath is provided but import fails, throw error
+    // Priority 2: Use clientPath for dynamic import
+    else if (clientPath) {
+        console.log('[prisma-extension-soft-delete] clientPath:', clientPath);
+        const prismaClientPath = clientPath;
+        // Initialize Prisma client for nested-operations extension first
+        await initializeNestedOperationsPrismaClient(clientPath);
+        try {
+            const imported = await import(prismaClientPath);
+            Prisma = imported.Prisma;
+            if (!Prisma || !Prisma.dmmf) {
+                throw new Error('Imported Prisma object does not have dmmf property. Please ensure Prisma client is properly generated.');
+            }
+        }
+        catch (error) {
             throw new Error(`Cannot find Prisma client at path: ${clientPath}. Error: ${error instanceof Error ? error.message : String(error)}`);
         }
-        else {
-            // If no clientPath provided, re-throw the original error
+    }
+    // Priority 3: Default to @prisma/client
+    else {
+        console.log('[prisma-extension-soft-delete] Using default @prisma/client');
+        await initializeNestedOperationsPrismaClient();
+        try {
+            const imported = await import("@prisma/client");
+            Prisma = imported.Prisma;
+            if (!Prisma || !Prisma.dmmf) {
+                throw new Error('Default @prisma/client does not have dmmf property. Please ensure Prisma client is generated.');
+            }
+        }
+        catch (error) {
             throw error;
         }
     }
