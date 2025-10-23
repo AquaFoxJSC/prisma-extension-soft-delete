@@ -12,7 +12,7 @@ permissions:
   pull-requests: write # Required to create pull requests
   id-token: write # Required to create id tokens
   packages: write # Required to publish packages
-  write-packages: write # Required to write packages
+  # write-packages: write # Required to write packages
 
 jobs:
   test:
