@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 export type ModelConfig = {
     field: string;
     createValue: (deleted: boolean) => any;
