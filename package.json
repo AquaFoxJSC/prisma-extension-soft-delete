@@ -1,6 +1,6 @@
 {
   "name": "@aquafoxjsc/prisma-extension-soft-delete",
-  "version": "1.0.0-rc8",
+  "version": "1.0.0-semantically-released",
   "publishConfig": {
     "access": "restricted",
     "registry": "https://npm.pkg.github.com"
@@ -35,9 +35,9 @@
     "middleware"
   ],
   "author": "AquaFoxJSC",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
-    "@aquafoxjsc/prisma-extension-nested-operations": "^1.0.0-rc5"
+    "@aquafoxjsc/prisma-extension-nested-operations": "^1.0.1"
   },
   "peerDependencies": {
     "@prisma/client": "*"
@@ -72,6 +72,5 @@
         "prerelease": true
       }
     ]
-  },
-  "packageManager": "pnpm@10.18.1+sha512.77a884a165cbba2d8d1c19e3b4880eee6d2fcabd0d879121e282196b80042351d5eb3ca0935fa599da1dc51265cc68816ad2bddd2a2de5ea9fdf92adbec7cd34"
+  }
 }
