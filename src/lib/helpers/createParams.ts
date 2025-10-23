@@ -1,4 +1,4 @@
-import { NestedParams } from "prisma-extension-nested-operations";
+import { NestedParams } from "@aquafoxjsc/prisma-extension-nested-operations";
 
 import { ModelConfig } from "../types";
 import { addDeletedToSelect } from "../utils/nestedReads";

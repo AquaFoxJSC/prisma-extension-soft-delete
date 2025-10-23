@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export type ModelConfig = {
   field: string;
@@ -11,4 +11,6 @@ export type Config = {
   models: Partial<Record<Prisma.ModelName, ModelConfig | boolean>>;
   defaultConfig?: ModelConfig;
   clientPath?: string;
+  prismaNamespace?: typeof Prisma;
+  prismaClient?: any;
 };
