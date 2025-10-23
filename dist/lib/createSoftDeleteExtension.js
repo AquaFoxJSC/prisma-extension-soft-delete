@@ -29,12 +29,13 @@ const extension_1 = require("@prisma/client/extension");
 const prisma_extension_nested_operations_1 = require("@aquafoxjsc/prisma-extension-nested-operations");
 const createParams_1 = require("./helpers/createParams");
 const modifyResult_1 = require("./helpers/modifyResult");
+const runtimeDataModelAdapter_1 = require("./utils/runtimeDataModelAdapter");
 async function createSoftDeleteExtension({ models, defaultConfig = {
     field: "deleted",
     createValue: Boolean,
     allowToOneUpdates: false,
     allowCompoundUniqueIndexWhere: false,
-}, clientPath, prismaNamespace, }) {
+}, clientPath, prismaNamespace, prismaClient, }) {
     if (!defaultConfig.field) {
         throw new Error("prisma-extension-soft-delete: defaultConfig.field is required");
     }
@@ -42,8 +43,28 @@ async function createSoftDeleteExtension({ models, defaultConfig = {
         throw new Error("prisma-extension-soft-delete: defaultConfig.createValue is required");
     }
     let Prisma;
-    // Priority 1: Use provided Prisma namespace directly
-    if (prismaNamespace) {
+    // Priority 1: Use prismaClient instance (Prisma v6 with _runtimeDataModel)
+    if (prismaClient) {
+        console.log('[prisma-extension-soft-delete] Using provided Prisma client instance');
+        // Check for Prisma v6 _runtimeDataModel
+        if (prismaClient._runtimeDataModel) {
+            console.log('[prisma-extension-soft-delete] Detected Prisma v6 - using _runtimeDataModel');
+            // Convert _runtimeDataModel to dmmf format for backward compatibility
+            const runtimeDataModel = prismaClient._runtimeDataModel;
+            const dmmf = (0, runtimeDataModelAdapter_1.convertRuntimeDataModelToDmmf)(runtimeDataModel);
+            // Get Prisma namespace from client constructor
+            Prisma = prismaClient.constructor;
+            // Attach dmmf to Prisma namespace for extensions
+            Prisma.dmmf = dmmf;
+            // Initialize nested-operations with the enhanced namespace
+            (0, prisma_extension_nested_operations_1.initializePrismaClientWithNamespace)(Prisma);
+        }
+        else {
+            throw new Error('Provided Prisma client does not have _runtimeDataModel. Please ensure you are using Prisma v6+');
+        }
+    }
+    // Priority 2: Use provided Prisma namespace directly
+    else if (prismaNamespace) {
         console.log('[prisma-extension-soft-delete] Using provided Prisma namespace');
         Prisma = prismaNamespace;
         if (!Prisma || !Prisma.dmmf) {

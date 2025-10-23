@@ -29,6 +29,7 @@ import {
 
 import { Config, ModelConfig } from "./types";
 import { ModifyResult, modifyReadResult } from "./helpers/modifyResult";
+import { convertRuntimeDataModelToDmmf } from "./utils/runtimeDataModelAdapter";
 
 type ConfigBound<F> = F extends (x: ModelConfig, ...args: infer P) => infer R
   ? (...args: P) => R
@@ -44,6 +45,7 @@ export async function createSoftDeleteExtension({
   },
   clientPath,
   prismaNamespace,
+  prismaClient,
 }: Config) {
   if (!defaultConfig.field) {
     throw new Error(
@@ -58,8 +60,32 @@ export async function createSoftDeleteExtension({
 
   let Prisma: any;
   
-  // Priority 1: Use provided Prisma namespace directly
-  if (prismaNamespace) {
+  // Priority 1: Use prismaClient instance (Prisma v6 with _runtimeDataModel)
+  if (prismaClient) {
+    console.log('[prisma-extension-soft-delete] Using provided Prisma client instance');
+    
+    // Check for Prisma v6 _runtimeDataModel
+    if ((prismaClient as any)._runtimeDataModel) {
+      console.log('[prisma-extension-soft-delete] Detected Prisma v6 - using _runtimeDataModel');
+      
+      // Convert _runtimeDataModel to dmmf format for backward compatibility
+      const runtimeDataModel = (prismaClient as any)._runtimeDataModel;
+      const dmmf = convertRuntimeDataModelToDmmf(runtimeDataModel);
+      
+      // Get Prisma namespace from client constructor
+      Prisma = (prismaClient as any).constructor;
+      
+      // Attach dmmf to Prisma namespace for extensions
+      Prisma.dmmf = dmmf;
+      
+      // Initialize nested-operations with the enhanced namespace
+      initializeNestedOperationsWithNamespace(Prisma);
+    } else {
+      throw new Error('Provided Prisma client does not have _runtimeDataModel. Please ensure you are using Prisma v6+');
+    }
+  }
+  // Priority 2: Use provided Prisma namespace directly
+  else if (prismaNamespace) {
     console.log('[prisma-extension-soft-delete] Using provided Prisma namespace');
     Prisma = prismaNamespace;
     

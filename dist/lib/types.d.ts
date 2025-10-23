@@ -10,4 +10,5 @@ export type Config = {
     defaultConfig?: ModelConfig;
     clientPath?: string;
     prismaNamespace?: typeof Prisma;
+    prismaClient?: any;
 };
